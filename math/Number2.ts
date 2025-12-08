@@ -1,1 +1,1 @@
-export type Number2 = { x: number; y: number };
+export type Number2 = { x: number; y: number }

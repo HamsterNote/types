@@ -1,14 +1,14 @@
 export interface UpdateFolderDto {
-  name?: string;
+  name?: string
 
-  tags?: string;
+  tags?: string
 
-  color?: string;
+  color?: string
 
-  sortOptions?: Record<string, any> | null;
+  sortOptions?: Record<string, object> | null
 
-  order?: number;
+  order?: number
 
   // 允许移动到另一个父级
-  parentUuid?: string | null;
+  parentUuid?: string | null
 }

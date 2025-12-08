@@ -1,3 +1,3 @@
 export interface BatchUpdateDto {
-	uuids: string[];
+  uuids: string[]
 }

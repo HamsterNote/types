@@ -1,5 +1,5 @@
 export interface InitUploadDto {
-  originalFilename: string;
+  originalFilename: string
 
-  size: number; // bytes, max 1GB
+  size: number // bytes, max 1GB
 }
