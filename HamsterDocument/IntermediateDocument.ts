@@ -179,7 +179,9 @@ export class IntermediateDocument {
     this.outline = outline
   }
   async getCover() {
-    return (await this.pagesMap.getPageByPageNumber(1)?.())?.thumbnail
+    const page = await this.pagesMap.getPageByPageNumber(1)?.()
+    if (!page) return undefined
+    return page.getThumbnail(0.3)
   }
   getPageById(id: string) {
     return this.pagesMap.getPageById(id)
