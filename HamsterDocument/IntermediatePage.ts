@@ -58,9 +58,9 @@ export class IntermediatePage {
       | IntermediateTextSerialized[]
   }) {
     this.id = id
-    this.texts = (texts as (IntermediateText | IntermediateTextSerialized)[]).map(
-      (t) => (t instanceof IntermediateText ? t : new IntermediateText(t))
-    )
+    this.texts = (
+      texts as (IntermediateText | IntermediateTextSerialized)[]
+    ).map((t) => (t instanceof IntermediateText ? t : new IntermediateText(t)))
     this.width = width
     this.height = height
     this.number = number
@@ -77,8 +77,10 @@ export class IntermediatePage {
   async getTexts(): Promise<IntermediateText[]> {
     if (this._getTextsFn) {
       const data = await this._getTextsFn()
-      const mapped = (data as (IntermediateText | IntermediateTextSerialized)[]).map(
-        (t) => (t instanceof IntermediateText ? t : new IntermediateText(t))
+      const mapped = (
+        data as (IntermediateText | IntermediateTextSerialized)[]
+      ).map((t) =>
+        t instanceof IntermediateText ? t : new IntermediateText(t)
       )
       this.texts = mapped
     }

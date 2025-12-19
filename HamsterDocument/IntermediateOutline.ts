@@ -10,10 +10,6 @@ export enum IntermediateOutlineDestType {
   URL = 'url'
 }
 
-// export interface IntermediateOutlineDest {
-// 	targetType: IntermediateOutlineDestType;
-// }
-
 export type IntermediateOutlineDest =
   | IntermediateOutlineDestPage
   | IntermediateOutlineDestText
