@@ -14,7 +14,7 @@ export interface IntermediatePageSerialized {
 }
 
 // 定义文本获取函数的返回类型别名
-type TextsGetterReturnType = 
+type TextsGetterReturnType =
   | Promise<IntermediateText[] | IntermediateTextSerialized[]>
   | IntermediateText[]
   | IntermediateTextSerialized[]
@@ -91,9 +91,7 @@ export class IntermediatePage {
     this._getThumbnailFn = fn
   }
   // 提供一个方法以注入按需获取文本的函数
-  setGetTexts(
-    fn: () => TextsGetterReturnType
-  ) {
+  setGetTexts(fn: () => TextsGetterReturnType) {
     this._getTextsFn = fn
   }
 }
