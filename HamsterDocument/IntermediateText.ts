@@ -125,8 +125,8 @@ export class IntermediateTextMarkedContent extends IntermediateText {
   // 这两个值参见 pdfjs 的 TextMarkedContent 类型
   constructor(
     data: IntermediateTextSerialized,
-    private type: TextMarkedContentType,
-    private markedContentId: string
+    protected type: TextMarkedContentType,
+    protected markedContentId: string
   ) {
     super(data)
   }
