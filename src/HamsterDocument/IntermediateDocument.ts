@@ -6,7 +6,7 @@ import {
   IntermediateOutline,
   IntermediateOutlineSerialized
 } from './IntermediateOutline'
-import { Number2 } from '@math'
+import { Number2 } from 'src/math'
 
 export interface IntermediateDocumentSerialized {
   id: string

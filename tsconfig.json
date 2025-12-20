@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@math": ["./math"]
+      "@math": ["src/math"]
     }
   }
 }
