@@ -1,11 +1,11 @@
 import {
   IntermediatePage,
   IntermediatePageSerialized
-} from '@typesCommon/HamsterDocument/IntermediatePage'
+} from './IntermediatePage'
 import {
   IntermediateOutline,
   IntermediateOutlineSerialized
-} from '@typesCommon/HamsterDocument/IntermediateOutline'
+} from './IntermediateOutline'
 import { Number2 } from '@math'
 
 export interface IntermediateDocumentSerialized {

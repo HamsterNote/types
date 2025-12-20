@@ -1,7 +1,7 @@
 import {
   IntermediateText,
   IntermediateTextSerialized
-} from '@typesCommon/HamsterDocument/IntermediateText'
+} from './IntermediateText'
 
 export interface IntermediatePageSerialized {
   id: string
