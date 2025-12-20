@@ -13,6 +13,12 @@ export interface IntermediatePageSerialized {
   thumbnail: string | undefined
 }
 
+// 定义文本获取函数的返回类型别名
+type TextsGetterReturnType = 
+  | Promise<IntermediateText[] | IntermediateTextSerialized[]>
+  | IntermediateText[]
+  | IntermediateTextSerialized[]
+
 export class IntermediatePage {
   public id: string
   public texts: IntermediateText[]
@@ -21,10 +27,7 @@ export class IntermediatePage {
   public number: number
   private _thumbnail?: string
   private _getThumbnailFn?: (scale: number) => Promise<string | undefined>
-  private _getTextsFn?: () =>
-    | Promise<IntermediateText[] | IntermediateTextSerialized[]>
-    | IntermediateText[]
-    | IntermediateTextSerialized[]
+  private _getTextsFn?: () => TextsGetterReturnType
   static serialize(page: IntermediatePage): IntermediatePageSerialized {
     return {
       id: page.id,
@@ -52,10 +55,7 @@ export class IntermediatePage {
     texts: IntermediateText[] | IntermediateTextSerialized[]
   } & {
     getThumbnailFn?: (scale: number) => Promise<string | undefined>
-    getTextsFn?: () =>
-      | Promise<IntermediateText[] | IntermediateTextSerialized[]>
-      | IntermediateText[]
-      | IntermediateTextSerialized[]
+    getTextsFn?: () => TextsGetterReturnType
   }) {
     this.id = id
     this.texts = (
@@ -92,10 +92,7 @@ export class IntermediatePage {
   }
   // 提供一个方法以注入按需获取文本的函数
   setGetTexts(
-    fn: () =>
-      | Promise<IntermediateText[] | IntermediateTextSerialized[]>
-      | IntermediateText[]
-      | IntermediateTextSerialized[]
+    fn: () => TextsGetterReturnType
   ) {
     this._getTextsFn = fn
   }
