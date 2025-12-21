@@ -6,7 +6,7 @@ import {
   IntermediateOutline,
   IntermediateOutlineSerialized
 } from './IntermediateOutline'
-import { Number2 } from 'src/math'
+import { Number2 } from '../math/index'
 
 export interface IntermediateDocumentSerialized {
   id: string
@@ -41,7 +41,9 @@ export class IntermediatePageMap {
     this.entryByPageNumber.set(entry.pageNumber, entry)
   }
 
-  private async resolve(entry: IntermediatePageEntry): Promise<IntermediatePage> {
+  private async resolve(
+    entry: IntermediatePageEntry
+  ): Promise<IntermediatePage> {
     if (!entry.cache) entry.cache = entry.loader()
     return entry.cache
   }
@@ -50,9 +52,7 @@ export class IntermediatePageMap {
   async getPages(): Promise<IntermediatePage[]> {
     const orderedEntries = this.pageNumbers
       .map((pageNumber) => this.entryByPageNumber.get(pageNumber))
-      .filter(
-        (entry): entry is IntermediatePageEntry => Boolean(entry)
-      )
+      .filter((entry): entry is IntermediatePageEntry => Boolean(entry))
     return Promise.all(orderedEntries.map((entry) => this.resolve(entry)))
   }
 
@@ -121,12 +121,14 @@ export class IntermediatePageMap {
   static makeBySerializedData(pages: IntermediatePageSerialized[]) {
     return IntermediatePageMap.fromSerialized(pages)
   }
-  static makeByInfoList(infoList: {
-    id: string
-    pageNumber: number
-    size: Number2
-    getData: PageLoader
-  }[]) {
+  static makeByInfoList(
+    infoList: {
+      id: string
+      pageNumber: number
+      size: Number2
+      getData: PageLoader
+    }[]
+  ) {
     return IntermediatePageMap.fromInfoList(infoList)
   }
 
