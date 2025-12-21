@@ -5,6 +5,7 @@
   "scripts": {
     "build:all": "tsc -p tsconfig.build.json",
     "prepublishOnly": "yarn build:all",
+    "lint": "echo 'no-lint'",
     "test": "echo 'no-test'"
   },
   "dependencies": {},
