@@ -28,6 +28,8 @@ export class IntermediatePage {
   private _thumbnail?: string
   private _getThumbnailFn?: (scale: number) => Promise<string | undefined>
   private _getTextsFn?: () => TextsGetterReturnType
+  // 标记文本是否已经完成加载，便于上层做懒加载策略
+  private textsLoaded: boolean
   static serialize(page: IntermediatePage): IntermediatePageSerialized {
     return {
       id: page.id,
@@ -67,6 +69,7 @@ export class IntermediatePage {
     this._thumbnail = thumbnail
     if (getThumbnailFn) this._getThumbnailFn = getThumbnailFn
     if (getTextsFn) this._getTextsFn = getTextsFn
+    this.textsLoaded = !getTextsFn
   }
   // 获取缩略图，按需渲染
   async getThumbnail(scale = 1): Promise<string | undefined> {
@@ -83,8 +86,15 @@ export class IntermediatePage {
         t instanceof IntermediateText ? t : new IntermediateText(t)
       )
       this.texts = mapped
+      this.textsLoaded = true
+      // 懒加载完成后去掉取数函数，避免重复请求
+      this._getTextsFn = undefined
     }
     return this.texts
+  }
+  // 判断文本是否已加载（便于调用方做缓存判断）
+  get hasLoadedTexts(): boolean {
+    return this.textsLoaded
   }
   // 提供一个方法以注入按需生成缩略图的函数
   setGetThumbnail(fn: (scale: number) => Promise<string | undefined>) {

@@ -1,2 +1,2 @@
-export * from './math'
-export * from './HamsterDocument'
+export * from './math/index'
+export * from './HamsterDocument/index'
