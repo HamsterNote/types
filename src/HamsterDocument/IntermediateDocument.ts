@@ -16,154 +16,180 @@ export interface IntermediateDocumentSerialized {
   outline?: IntermediateOutlineSerialized[]
 }
 
-type getPage = () => Promise<IntermediatePage>
+type PageLoader = () => Promise<IntermediatePage>
+
+interface IntermediatePageEntry {
+  id: string
+  pageNumber: number
+  size: Number2
+  loader: PageLoader
+  cache?: Promise<IntermediatePage>
+}
 
 // ! 用来懒加载 Pages
 export class IntermediatePageMap {
-  // ! 缓存 Promise
-  private cacheMapById: Map<string, ReturnType<getPage>> = new Map()
-  // ! 缓存 Promise
-  private cacheMapByPageNumber: Map<number, ReturnType<getPage>> = new Map()
-  constructor(
-    private mapById: Map<string, getPage>,
-    private mapByPageNumber: Map<number, getPage>,
-    private sizeMapByPageNumber: Map<number, Number2>
-  ) {
-    return
+  // ! 以 id、页码分别索引，方便不同场景快速查找
+  private entryById: Map<string, IntermediatePageEntry> = new Map()
+  private entryByPageNumber: Map<number, IntermediatePageEntry> = new Map()
+
+  constructor(entries: IntermediatePageEntry[] = []) {
+    entries.forEach((entry) => this.registerEntry(entry))
   }
-  // 按顺序从第一页开始
+
+  private registerEntry(entry: IntermediatePageEntry) {
+    this.entryById.set(entry.id, entry)
+    this.entryByPageNumber.set(entry.pageNumber, entry)
+  }
+
+  private async resolve(entry: IntermediatePageEntry): Promise<IntermediatePage> {
+    if (!entry.cache) entry.cache = entry.loader()
+    return entry.cache
+  }
+
+  // 按页码顺序批量获取，内部并发取数避免串行等待
   async getPages(): Promise<IntermediatePage[]> {
-    const result: IntermediatePage[] = []
-    for (const pageId of this.mapById.keys()) {
-      // ? 从 this.getPageById 拿是因为会过一遍缓存
-      const getPage = this.getPageById(pageId)
-      if (getPage) {
-        const page = await getPage()
-        result[page.number - 1] = page
-      }
-    }
-    return result
-  }
-  updatePage(page: IntermediatePage) {
-    const newPromise = Promise.resolve(page)
-    const newGetPage = () => newPromise
-    this.cacheMapById.set(page.id, newPromise)
-    this.cacheMapByPageNumber.set(page.number, newPromise)
-    this.mapById.set(page.id, newGetPage)
-    this.mapByPageNumber.set(page.number, newGetPage)
-    this.sizeMapByPageNumber.set(page.number, {
-      x: page.width,
-      y: page.height
-    })
-  }
-  // & 从序列化的数据生成类
-  static makeBySerializedData(pages: IntermediatePageSerialized[]) {
-    const mapById: IntermediatePageMap['mapById'] = new Map()
-    const mapByPageNumber: IntermediatePageMap['mapByPageNumber'] = new Map()
-    const sizeMapByPageNumber: IntermediatePageMap['sizeMapByPageNumber'] =
-      new Map()
-    pages.forEach((page) => {
-      mapById.set(page.id, () => Promise.resolve(new IntermediatePage(page)))
-      mapByPageNumber.set(page.number, () =>
-        Promise.resolve(new IntermediatePage(page))
+    const orderedEntries = this.pageNumbers
+      .map((pageNumber) => this.entryByPageNumber.get(pageNumber))
+      .filter(
+        (entry): entry is IntermediatePageEntry => Boolean(entry)
       )
-      sizeMapByPageNumber.set(page.number, { x: page.width, y: page.height })
-    })
-    return new IntermediatePageMap(
-      mapById,
-      mapByPageNumber,
-      sizeMapByPageNumber
-    )
+    return Promise.all(orderedEntries.map((entry) => this.resolve(entry)))
   }
+
+  // 直接用完整实例覆盖缓存，便于外部更新
+  updatePage(page: IntermediatePage) {
+    // 先清理旧索引，避免相同 id 或页码残留造成脏数据
+    const oldById = this.entryById.get(page.id)
+    if (oldById) {
+      this.entryByPageNumber.delete(oldById.pageNumber)
+      this.entryById.delete(oldById.id)
+    }
+    const oldByNumber = this.entryByPageNumber.get(page.number)
+    if (oldByNumber && oldByNumber.id !== page.id) {
+      this.entryById.delete(oldByNumber.id)
+      this.entryByPageNumber.delete(oldByNumber.pageNumber)
+    }
+    const newPromise = Promise.resolve(page)
+    const entry: IntermediatePageEntry = {
+      id: page.id,
+      pageNumber: page.number,
+      size: { x: page.width, y: page.height },
+      loader: () => newPromise,
+      cache: newPromise
+    }
+    this.registerEntry(entry)
+  }
+
+  get pageCount() {
+    return this.entryByPageNumber.size
+  }
+
+  get pageNumbers(): number[] {
+    return [...this.entryByPageNumber.keys()].sort((a, b) => a - b)
+  }
+
+  // & 从序列化的数据生成类
+  static fromSerialized(pages: IntermediatePageSerialized[]) {
+    const entries: IntermediatePageEntry[] = pages.map((page) => ({
+      id: page.id,
+      pageNumber: page.number,
+      loader: () => Promise.resolve(new IntermediatePage(page)),
+      size: { x: page.width, y: page.height }
+    }))
+    return new IntermediatePageMap(entries)
+  }
+
   // & 从列表数据生成类
-  static makeByInfoList(
+  static fromInfoList(
     infoList: {
       id: string
       pageNumber: number
       size: Number2
-      getData: getPage
+      getData: PageLoader
     }[]
   ) {
-    const mapById: IntermediatePageMap['mapById'] = new Map()
-    const mapByPageNumber: IntermediatePageMap['mapByPageNumber'] = new Map()
-    const sizeMapByPageNumber: IntermediatePageMap['sizeMapByPageNumber'] =
-      new Map()
-    infoList.forEach((info) => {
-      mapById.set(info.id, info.getData)
-      mapByPageNumber.set(info.pageNumber, info.getData)
-      sizeMapByPageNumber.set(info.pageNumber, info.size)
-    })
-    return new IntermediatePageMap(
-      mapById,
-      mapByPageNumber,
-      sizeMapByPageNumber
-    )
+    const entries: IntermediatePageEntry[] = infoList.map((info) => ({
+      id: info.id,
+      pageNumber: info.pageNumber,
+      size: info.size,
+      loader: info.getData
+    }))
+    return new IntermediatePageMap(entries)
   }
+
+  // 兼容旧命名（Deprecated），方便平滑过渡
+  static makeBySerializedData(pages: IntermediatePageSerialized[]) {
+    return IntermediatePageMap.fromSerialized(pages)
+  }
+  static makeByInfoList(infoList: {
+    id: string
+    pageNumber: number
+    size: Number2
+    getData: PageLoader
+  }[]) {
+    return IntermediatePageMap.fromInfoList(infoList)
+  }
+
   getPageById(id: string) {
-    const cache = this.cacheMapById.get(id)
-    if (!cache) {
-      const result = this.mapById.get(id)
-      if (result) {
-        const promise = result()
-        this.cacheMapById.set(id, promise)
-        return () => promise
-      }
-    } else {
-      return () => cache
-    }
-    return undefined
+    const entry = this.entryById.get(id)
+    if (!entry) return undefined
+    return this.resolve(entry)
   }
+
   getPageByPageNumber(pageNumber: number) {
-    const cache = this.cacheMapByPageNumber.get(pageNumber)
-    if (!cache) {
-      const result = this.mapByPageNumber.get(pageNumber)
-      if (result) {
-        const promise = result()
-        this.cacheMapByPageNumber.set(pageNumber, promise)
-        return () => promise
-      }
-    } else {
-      return () => cache
-    }
-    return undefined
+    const entry = this.entryByPageNumber.get(pageNumber)
+    if (!entry) return undefined
+    return this.resolve(entry)
   }
+
   getPageSizeByPageNumber(pageNumber: number) {
-    return this.sizeMapByPageNumber.get(pageNumber)
+    return this.entryByPageNumber.get(pageNumber)?.size
   }
 }
 
 export class IntermediateDocument {
-  public id: string
+  public readonly id: string
   public title: string
   public outline?: IntermediateOutline[]
+
   get pages(): Promise<IntermediatePage[]> {
-    // 按顺序从 pagesMap 获取pages
     return this.pagesMap.getPages()
   }
+
   set pages(pages: IntermediatePage[]) {
     pages.forEach((page) => {
       this.pagesMap.updatePage(page)
     })
   }
+
   private pagesMap: IntermediatePageMap
+
   static async serialize(
     doc: IntermediateDocument
   ): Promise<IntermediateDocumentSerialized> {
-    const pages = await doc.pages
+    const pages = await doc.pagesMap.getPages()
+    const serializedPages = await Promise.all(
+      pages.map(async (page) => {
+        if (!page.hasLoadedTexts) await page.getTexts()
+        return IntermediatePage.serialize(page)
+      })
+    )
     return {
-      pages: pages.map(IntermediatePage.serialize),
+      pages: serializedPages,
       id: doc.id,
       title: doc.title,
       outline: doc.outline?.map(IntermediateOutline.serialize)
     }
   }
+
   static parse(data: IntermediateDocumentSerialized): IntermediateDocument {
     return new IntermediateDocument({
       ...data,
-      pagesMap: IntermediatePageMap.makeBySerializedData(data.pages),
+      pagesMap: IntermediatePageMap.fromSerialized(data.pages),
       outline: data.outline?.map(IntermediateOutline.parse)
     })
   }
+
   constructor({
     pagesMap,
     id,
@@ -178,20 +204,34 @@ export class IntermediateDocument {
     this.title = title
     this.outline = outline
   }
-  async getCover() {
-    const page = await this.pagesMap.getPageByPageNumber(1)?.()
-    if (!page) return undefined
-    return page.getThumbnail(0.3)
+
+  get pageCount() {
+    return this.pagesMap.pageCount
   }
+
+  get pageNumbers() {
+    return this.pagesMap.pageNumbers
+  }
+
+  async getCover(scale = 0.3) {
+    const firstPagePromise = this.pagesMap.getPageByPageNumber(1)
+    const page = firstPagePromise ? await firstPagePromise : undefined
+    if (!page) return undefined
+    return page.getThumbnail(scale)
+  }
+
   getPageById(id: string) {
     return this.pagesMap.getPageById(id)
   }
+
   getPageByPageNumber(pageNumber: number) {
     return this.pagesMap.getPageByPageNumber(pageNumber)
   }
+
   getPageSizeByPageNumber(pageNumber: number) {
     return this.pagesMap.getPageSizeByPageNumber(pageNumber)
   }
+
   // 获取文档大纲
   getOutline() {
     return this.outline
