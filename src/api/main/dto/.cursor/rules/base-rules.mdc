@@ -1,0 +1,8 @@
+---
+globs: common/api/main/dto/*.ts
+alwaysApply: false
+---
+1. 当前文件夹是用来放置接口传参类型的
+2. 这个文件夹前后端都会引用，在创作时要同时兼容浏览器和 NodeJs
+3. 所有字段必须有中文注释
+4. 在编辑这个文件夹里面的文件时，要注意对应的后端是 NestJs，如果是在 NestJs 中嵌入时，要注意对应格式符合 NestJs 要求
