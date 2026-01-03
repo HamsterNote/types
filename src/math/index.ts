@@ -1,1 +1,1 @@
-export * from './Number2'
+export * from './Number2.js'

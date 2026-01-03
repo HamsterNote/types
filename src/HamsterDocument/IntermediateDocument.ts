@@ -1,12 +1,12 @@
 import {
   IntermediatePage,
   IntermediatePageSerialized
-} from './IntermediatePage'
+} from './IntermediatePage.js'
 import {
   IntermediateOutline,
   IntermediateOutlineSerialized
-} from './IntermediateOutline'
-import { Number2 } from '../math/index'
+} from './IntermediateOutline.js'
+import { Number2 } from '../math/index.js'
 
 export interface IntermediateDocumentSerialized {
   id: string
