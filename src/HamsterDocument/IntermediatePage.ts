@@ -1,7 +1,7 @@
 import {
   IntermediateText,
   IntermediateTextSerialized
-} from './IntermediateText.js'
+} from './IntermediateText'
 
 export interface IntermediatePageSerialized {
   id: string
