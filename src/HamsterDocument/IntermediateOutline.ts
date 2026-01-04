@@ -1,7 +1,7 @@
 import {
   IntermediateText,
   IntermediateTextSerialized
-} from './IntermediateText.js'
+} from './IntermediateText'
 
 export enum IntermediateOutlineDestType {
   TEXT = 'text',
