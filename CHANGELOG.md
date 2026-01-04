@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-04
+
 ### Added
 - 添加 OpenCode 自动代码审查工作流，在 Pull Request 时触发 AI 代码审查
 
