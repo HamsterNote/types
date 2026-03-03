@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- 修复 DTO 装饰器在 TypeScript 5 下触发的 `TS1240` 报错，新增 `experimentalDecorators` 配置以兼容 `class-validator`
+
 ## [0.5.2] - 2026-01-07
 
 ### Changed

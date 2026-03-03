@@ -1,6 +1,6 @@
 {
   "name": "@hamster-note/types",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "",
   "scripts": {
     "build:all": "rolldown --config rolldown.config.ts",
@@ -8,7 +8,10 @@
     "lint": "echo 'no-lint'",
     "test": "echo 'no-test'"
   },
-  "dependencies": {},
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@system-ui-js/development-base": "^0.1.2",
@@ -35,6 +38,8 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "require": "./dist/index.js",
+      "default": "./dist/index.js",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
