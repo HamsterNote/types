@@ -2,6 +2,7 @@
   "extends": "@system-ui-js/development-base/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "experimentalDecorators": true,
     "paths": {
       "@math": ["src/math"]
     }
