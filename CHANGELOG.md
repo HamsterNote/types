@@ -7,8 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-03-21
+
+### Added
+- 添加 `GenerateLlmTextDto` 与 `GenerateLlmTextResponseDto`，为 LLM 文本生成接口提供输入校验和响应类型定义
+
+### Changed
+- 调整构建流程，先生成 JavaScript 与声明文件再执行打包，并引入 `reflect-metadata` 以支持装饰器运行时依赖
+- 从包入口补充导出 `api/main/dto` 中的 LLM 文本生成 DTO
+
+## [0.5.3] - 2026-03-07
+
+### Added
+- 添加图像记忆、文本记忆和记忆搜索相关 DTO，并从 `api/main/dto` 统一导出
+
+### Changed
+- 更新包版本至 `0.5.3`，补充 `class-transformer`、`class-validator` 依赖并完善包导出配置
+
 ### Fixed
 - 修复 DTO 装饰器在 TypeScript 5 下触发的 `TS1240` 报错，新增 `experimentalDecorators` 配置以兼容 `class-validator`
+- 修复 DTO 文件中的注释和格式问题
 
 ## [0.5.2] - 2026-01-07
 
