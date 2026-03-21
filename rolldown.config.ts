@@ -1,7 +1,4 @@
-import { dts } from 'rolldown-plugin-dts'
-
 export default {
-  input: './src/index.ts',
-  plugins: [dts()],
+  input: './.build/index.js',
   output: [{ dir: 'dist', format: 'es', sourcemap: true }]
 }

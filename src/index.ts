@@ -1,3 +1,5 @@
-export * from './math'
-export * from './HamsterDocument'
+import 'reflect-metadata'
+
 export * from './api/main/dto'
+export * from './HamsterDocument'
+export * from './math'
