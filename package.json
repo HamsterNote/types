@@ -1,6 +1,6 @@
 {
   "name": "@hamster-note/types",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "",
   "scripts": {
     "build:all": "rm -rf .build dist && tsc --project tsconfig.build.json --declaration false --declarationMap false --outDir .build && tsc --project tsconfig.build.json --emitDeclarationOnly --outDir dist && rolldown --config rolldown.config.ts && rm -rf .build",
@@ -48,5 +48,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
