@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-03-24
+
+### Changed
+- 升级 Node.js 版本至 22
+- 新增 npm 认证校验步骤，确保发布前 token 有效
+- 标记运行时依赖 (class-transformer, class-validator, reflect-metadata) 为 external，避免打包到产物中
+- 升级版本号至 0.5.5，添加 publishConfig 配置
+
 ## [0.5.4] - 2026-03-21
 
 ### Added
