@@ -470,7 +470,7 @@ This same rhythm works for any size change—a small fix or a major feature.
 
 | Command | What it does |
 |---------|--------------|
-| `/opsx-propose` | Create a change and generate all artifacts |
+| `/opsx-ff` | Create a change and generate all artifacts |
 | `/opsx-explore` | Think through problems before/during work |
 | `/opsx-apply` | Implement tasks from a change |
 | `/opsx-archive` | Archive a completed change |
@@ -488,7 +488,7 @@ This same rhythm works for any size change—a small fix or a major feature.
 
 ## What's Next?
 
-Try `/opsx-propose` on something you actually want to build. You've got the rhythm now!
+Try `/opsx-ff` on something you actually want to build. You've got the rhythm now!
 ```
 
 ---
@@ -522,7 +522,7 @@ If the user says they just want to see the commands or skip the tutorial:
 
 | Command | What it does |
 |---------|--------------|
-| `/opsx-propose <name>` | Create a change and generate all artifacts |
+| `/opsx-ff <name>` | Create a change and generate all artifacts |
 | `/opsx-explore` | Think through problems (no code changes) |
 | `/opsx-apply <name>` | Implement tasks |
 | `/opsx-archive <name>` | Archive when done |
@@ -536,7 +536,7 @@ If the user says they just want to see the commands or skip the tutorial:
 | `/opsx-ff <name>` | Fast-forward: all artifacts at once |
 | `/opsx-verify <name>` | Verify implementation |
 
-Try `/opsx-propose` to start your first change.
+Try `/opsx-ff` to start your first change.
 ```
 
 Exit gracefully.
