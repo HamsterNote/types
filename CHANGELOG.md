@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-04-18
+
+### Added
+- 新增 `IntermediateParagraph` 中间态结构，并在 `IntermediatePage` 中补充 `paragraphs` 字段，用于表达段落与文本块的归属关系
+- 新增段落结构与文本几何结构的测试用例，覆盖序列化、反序列化、兼容旧数据与异常输入校验
+
+### Changed
+- 将 `IntermediateText` 与 `IntermediateOutline` 的几何信息从 `x`、`y`、`width`、`height`、`rotate` 调整为 `polygon` 四点坐标，统一文本区域表达方式并显式保留阅读方向
+- 完善 `IntermediateDocument`、`IntermediatePage`、`IntermediateOutline` 的 `parse` / `serialize` 流程，统一通过静态解析方法恢复中间态对象
+- 更新 `test` 脚本，在发布前执行构建并运行段落结构相关测试
+
 ## [0.6.0] - 2026-04-10
 
 ### Changed

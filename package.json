@@ -1,6 +1,6 @@
 {
   "name": "@hamster-note/types",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "",
   "scripts": {
     "build:all": "rm -rf .build dist && tsc --project tsconfig.build.json --declaration false --declarationMap false --outDir .build && tsc --project tsconfig.build.json --emitDeclarationOnly --outDir dist && rolldown --config rolldown.config.ts && rm -rf .build",
