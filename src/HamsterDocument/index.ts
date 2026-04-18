@@ -1,4 +1,5 @@
 export * from './IntermediateDocument'
-export * from './IntermediatePage'
-export * from './IntermediateText'
 export * from './IntermediateOutline'
+export * from './IntermediatePage'
+export * from './IntermediateParagraph'
+export * from './IntermediateText'

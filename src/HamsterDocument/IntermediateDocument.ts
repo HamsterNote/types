@@ -1,12 +1,12 @@
 import {
   IntermediatePage,
-  IntermediatePageSerialized
+  type IntermediatePageSerialized
 } from './IntermediatePage'
 import {
   IntermediateOutline,
-  IntermediateOutlineSerialized
+  type IntermediateOutlineSerialized
 } from './IntermediateOutline'
-import { Number2 } from '../math/index'
+import type { Number2 } from '../math/index'
 
 export interface IntermediateDocumentSerialized {
   id: string
@@ -33,7 +33,9 @@ export class IntermediatePageMap {
   private entryByPageNumber: Map<number, IntermediatePageEntry> = new Map()
 
   constructor(entries: IntermediatePageEntry[] = []) {
-    entries.forEach((entry) => this.registerEntry(entry))
+    entries.forEach((entry) => {
+      this.registerEntry(entry)
+    })
   }
 
   private registerEntry(entry: IntermediatePageEntry) {
@@ -93,7 +95,7 @@ export class IntermediatePageMap {
     const entries: IntermediatePageEntry[] = pages.map((page) => ({
       id: page.id,
       pageNumber: page.number,
-      loader: () => Promise.resolve(new IntermediatePage(page)),
+      loader: () => Promise.resolve(IntermediatePage.parse(page)),
       size: { x: page.width, y: page.height }
     }))
     return new IntermediatePageMap(entries)
@@ -188,7 +190,9 @@ export class IntermediateDocument {
     return new IntermediateDocument({
       ...data,
       pagesMap: IntermediatePageMap.fromSerialized(data.pages),
-      outline: data.outline?.map(IntermediateOutline.parse)
+      outline: data.outline?.map((outline) =>
+        IntermediateOutline.parse(outline)
+      )
     })
   }
 
