@@ -1,11 +1,16 @@
 import {
+  IntermediateParagraph,
+  type IntermediateParagraphSerialized
+} from './IntermediateParagraph'
+import {
   IntermediateText,
-  IntermediateTextSerialized
+  type IntermediateTextSerialized
 } from './IntermediateText'
 
 export interface IntermediatePageSerialized {
   id: string
   texts: IntermediateTextSerialized[]
+  paragraphs?: IntermediateParagraphSerialized[]
   width: number
   height: number
   number: number
@@ -22,6 +27,7 @@ type TextsGetterReturnType =
 export class IntermediatePage {
   public id: string
   public texts: IntermediateText[]
+  public paragraphs: IntermediateParagraph[]
   public width: number
   public height: number
   public number: number
@@ -34,6 +40,7 @@ export class IntermediatePage {
     return {
       id: page.id,
       texts: page.texts.map(IntermediateText.serialize),
+      paragraphs: page.paragraphs.map(IntermediateParagraph.serialize),
       width: page.width,
       height: page.height,
       number: page.number,
@@ -46,6 +53,7 @@ export class IntermediatePage {
   }
   constructor({
     texts,
+    paragraphs = [],
     width,
     height,
     number,
@@ -53,8 +61,9 @@ export class IntermediatePage {
     thumbnail,
     getThumbnailFn,
     getTextsFn
-  }: Omit<IntermediatePageSerialized, 'texts'> & {
+  }: Omit<IntermediatePageSerialized, 'texts' | 'paragraphs'> & {
     texts: IntermediateText[] | IntermediateTextSerialized[]
+    paragraphs?: IntermediateParagraph[] | IntermediateParagraphSerialized[]
   } & {
     getThumbnailFn?: (scale: number) => Promise<string | undefined>
     getTextsFn?: () => TextsGetterReturnType
@@ -62,7 +71,16 @@ export class IntermediatePage {
     this.id = id
     this.texts = (
       texts as (IntermediateText | IntermediateTextSerialized)[]
-    ).map((t) => (t instanceof IntermediateText ? t : new IntermediateText(t)))
+    ).map((text) =>
+      text instanceof IntermediateText ? text : IntermediateText.parse(text)
+    )
+    this.paragraphs = (
+      paragraphs as (IntermediateParagraph | IntermediateParagraphSerialized)[]
+    ).map((paragraph) =>
+      paragraph instanceof IntermediateParagraph
+        ? paragraph
+        : IntermediateParagraph.parse(paragraph)
+    )
     this.width = width
     this.height = height
     this.number = number
@@ -83,7 +101,7 @@ export class IntermediatePage {
       const mapped = (
         data as (IntermediateText | IntermediateTextSerialized)[]
       ).map((t) =>
-        t instanceof IntermediateText ? t : new IntermediateText(t)
+        t instanceof IntermediateText ? t : IntermediateText.parse(t)
       )
       this.texts = mapped
       this.textsLoaded = true

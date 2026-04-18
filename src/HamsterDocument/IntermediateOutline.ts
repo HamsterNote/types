@@ -1,6 +1,6 @@
 import {
   IntermediateText,
-  IntermediateTextSerialized
+  type IntermediateTextSerialized
 } from './IntermediateText'
 
 export enum IntermediateOutlineDestType {
@@ -63,7 +63,7 @@ export class IntermediateOutline
   }
   constructor(data: IntermediateOutlineSerialized) {
     const { dest, ...textData } = data
-    super(textData as IntermediateTextSerialized)
+    super(textData)
     this.dest = dest
   }
 }

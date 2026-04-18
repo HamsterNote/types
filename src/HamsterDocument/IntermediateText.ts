@@ -4,6 +4,45 @@ export enum TextDir {
   RTL = 'rtl'
 }
 
+export type IntermediateTextPolygonPoint = [number, number]
+
+export type IntermediateTextPolygon = [
+  IntermediateTextPolygonPoint,
+  IntermediateTextPolygonPoint,
+  IntermediateTextPolygonPoint,
+  IntermediateTextPolygonPoint
+]
+
+function isFiniteCoordinate(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function parsePolygonPoint(
+  point: unknown,
+  index: number
+): IntermediateTextPolygonPoint {
+  if (!Array.isArray(point) || point.length !== 2) {
+    throw new TypeError(`polygon[${index}] 必须是 [number, number]`)
+  }
+  const [x, y] = point
+  if (!isFiniteCoordinate(x) || !isFiniteCoordinate(y)) {
+    throw new TypeError(`polygon[${index}] 必须包含两个有限数值坐标`)
+  }
+  return [x, y]
+}
+
+function normalizePolygon(polygon: unknown): IntermediateTextPolygon {
+  if (!Array.isArray(polygon) || polygon.length !== 4) {
+    throw new TypeError('polygon 必须包含且仅包含 4 个点')
+  }
+  return [
+    parsePolygonPoint(polygon[0], 0),
+    parsePolygonPoint(polygon[1], 1),
+    parsePolygonPoint(polygon[2], 2),
+    parsePolygonPoint(polygon[3], 3)
+  ]
+}
+
 export interface IntermediateTextSerialized {
   id: string
   // 文字内容
@@ -18,16 +57,10 @@ export interface IntermediateTextSerialized {
   italic: boolean
   // 字体颜色
   color: string
-  // 整体宽度
-  width: number
-  // 整体高度
-  height: number
+  // 文本区域的四边形顶点，polygon[0] -> polygon[1] 表示文本方向
+  polygon: IntermediateTextPolygon
   // 行高
   lineHeight: number
-  // x 坐标, 大于等于 1 的按 px，小于 1 的按 百分比
-  x: number
-  // y 坐标, 大于等于 1 的按 px，小于 1 的按 百分比
-  y: number
   // 字体 baseline
   ascent: number
   // 字体 descent
@@ -36,8 +69,6 @@ export interface IntermediateTextSerialized {
   vertical?: boolean
   // 文字方向
   dir: TextDir
-  // 旋转
-  rotate: number
   // 倾斜
   skew: number
   // 是否是行末
@@ -52,21 +83,31 @@ export class IntermediateText implements IntermediateTextSerialized {
   public fontWeight: number
   public italic: boolean
   public color: string
-  public width: number
-  public height: number
+  public polygon: IntermediateTextPolygon
   public lineHeight: number
-  public x: number
-  public y: number
   public ascent: number
   public descent: number
   public vertical?: boolean
   public dir: TextDir
-  public rotate: number
   public skew: number
   public isEOL: boolean
   static serialize(text: IntermediateText): IntermediateTextSerialized {
     return {
-      ...text
+      id: text.id,
+      content: text.content,
+      fontSize: text.fontSize,
+      fontFamily: text.fontFamily,
+      fontWeight: text.fontWeight,
+      italic: text.italic,
+      color: text.color,
+      polygon: normalizePolygon(text.polygon),
+      lineHeight: text.lineHeight,
+      ascent: text.ascent,
+      descent: text.descent,
+      vertical: text.vertical,
+      dir: text.dir,
+      skew: text.skew,
+      isEOL: text.isEOL
     }
   }
   static parse(data: IntermediateTextSerialized): IntermediateText {
@@ -80,16 +121,12 @@ export class IntermediateText implements IntermediateTextSerialized {
     fontWeight,
     italic,
     color,
-    width,
-    height,
+    polygon,
     lineHeight,
-    x,
-    y,
     ascent,
     descent,
     vertical,
     dir,
-    rotate,
     skew,
     isEOL
   }: IntermediateTextSerialized) {
@@ -100,16 +137,12 @@ export class IntermediateText implements IntermediateTextSerialized {
     this.fontWeight = fontWeight
     this.italic = italic
     this.color = color
-    this.width = width
-    this.height = height
+    this.polygon = normalizePolygon(polygon)
     this.lineHeight = lineHeight
-    this.x = x
-    this.y = y
     this.ascent = ascent
     this.descent = descent
     this.vertical = vertical
     this.dir = dir
-    this.rotate = rotate
     this.skew = skew
     this.isEOL = isEOL
   }
