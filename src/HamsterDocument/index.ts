@@ -1,4 +1,5 @@
 export * from './IntermediateDocument'
+export * from './IntermediateImage'
 export * from './IntermediateOutline'
 export * from './IntermediatePage'
 export * from './IntermediateParagraph'

@@ -1,4 +1,8 @@
 import {
+  IntermediateImage,
+  type IntermediateImageSerialized
+} from './IntermediateImage'
+import {
   IntermediateParagraph,
   type IntermediateParagraphSerialized
 } from './IntermediateParagraph'
@@ -7,52 +11,82 @@ import {
   type IntermediateTextSerialized
 } from './IntermediateText'
 
+// 内容元素类型：可以是文本或图片
+export type IntermediateContent = IntermediateText | IntermediateImage
+export type IntermediateContentSerialized =
+  | IntermediateTextSerialized
+  | IntermediateImageSerialized
+
 export interface IntermediatePageSerialized {
   id: string
-  texts: IntermediateTextSerialized[]
+  // 页面内容，包括文本和图片
+  content: IntermediateContentSerialized[]
   paragraphs?: IntermediateParagraphSerialized[]
   width: number
   height: number
   number: number
-  // 缩略图，背景图
-  thumbnail: string | undefined
+  // 缩略图，使用 IntermediateImage 表示
+  thumbnail?: IntermediateImageSerialized
 }
 
-// 定义文本获取函数的返回类型别名
-type TextsGetterReturnType =
-  | Promise<IntermediateText[] | IntermediateTextSerialized[]>
-  | IntermediateText[]
-  | IntermediateTextSerialized[]
+// 定义内容获取函数的返回类型别名
+type ContentGetterReturnType =
+  | Promise<IntermediateContent[] | IntermediateContentSerialized[]>
+  | IntermediateContent[]
+  | IntermediateContentSerialized[]
+
+function parseContentItem(
+  item: IntermediateContent | IntermediateContentSerialized
+): IntermediateContent {
+  if (item instanceof IntermediateText || item instanceof IntermediateImage) {
+    return item
+  }
+  // 根据 src 属性判断是图片还是文本
+  if ('src' in item) {
+    return IntermediateImage.parse(item as IntermediateImageSerialized)
+  }
+  return IntermediateText.parse(item as IntermediateTextSerialized)
+}
+
+function serializeContentItem(
+  item: IntermediateContent
+): IntermediateContentSerialized {
+  if (item instanceof IntermediateImage) {
+    return IntermediateImage.serialize(item)
+  }
+  return IntermediateText.serialize(item)
+}
 
 export class IntermediatePage {
   public id: string
-  public texts: IntermediateText[]
+  public content: IntermediateContent[]
   public paragraphs: IntermediateParagraph[]
   public width: number
   public height: number
   public number: number
-  private _thumbnail?: string
-  private _getThumbnailFn?: (scale: number) => Promise<string | undefined>
-  private _getTextsFn?: () => TextsGetterReturnType
-  // 标记文本是否已经完成加载，便于上层做懒加载策略
-  private textsLoaded: boolean
+  private _thumbnail?: IntermediateImage
+  private _getThumbnailFn?: (scale: number) => Promise<IntermediateImage | undefined>
+  private _getContentFn?: () => ContentGetterReturnType
+  // 标记内容是否已经完成加载，便于上层做懒加载策略
+  private contentLoaded: boolean
   static serialize(page: IntermediatePage): IntermediatePageSerialized {
     return {
       id: page.id,
-      texts: page.texts.map(IntermediateText.serialize),
+      content: page.content.map(serializeContentItem),
       paragraphs: page.paragraphs.map(IntermediateParagraph.serialize),
       width: page.width,
       height: page.height,
       number: page.number,
-      // 序列化时仅保留已有的静态缩略图（如果存在）
       thumbnail: page._thumbnail
+        ? IntermediateImage.serialize(page._thumbnail)
+        : undefined
     }
   }
   static parse(data: IntermediatePageSerialized): IntermediatePage {
     return new IntermediatePage(data)
   }
   constructor({
-    texts,
+    content,
     paragraphs = [],
     width,
     height,
@@ -60,20 +94,18 @@ export class IntermediatePage {
     id,
     thumbnail,
     getThumbnailFn,
-    getTextsFn
-  }: Omit<IntermediatePageSerialized, 'texts' | 'paragraphs'> & {
-    texts: IntermediateText[] | IntermediateTextSerialized[]
+    getContentFn
+  }: Omit<IntermediatePageSerialized, 'content' | 'paragraphs'> & {
+    content: IntermediateContent[] | IntermediateContentSerialized[]
     paragraphs?: IntermediateParagraph[] | IntermediateParagraphSerialized[]
   } & {
-    getThumbnailFn?: (scale: number) => Promise<string | undefined>
-    getTextsFn?: () => TextsGetterReturnType
+    getThumbnailFn?: (scale: number) => Promise<IntermediateImage | undefined>
+    getContentFn?: () => ContentGetterReturnType
   }) {
     this.id = id
-    this.texts = (
-      texts as (IntermediateText | IntermediateTextSerialized)[]
-    ).map((text) =>
-      text instanceof IntermediateText ? text : IntermediateText.parse(text)
-    )
+    this.content = (
+      content as (IntermediateContent | IntermediateContentSerialized)[]
+    ).map(parseContentItem)
     this.paragraphs = (
       paragraphs as (IntermediateParagraph | IntermediateParagraphSerialized)[]
     ).map((paragraph) =>
@@ -85,41 +117,43 @@ export class IntermediatePage {
     this.height = height
     this.number = number
     this._thumbnail = thumbnail
+      ? thumbnail instanceof IntermediateImage
+        ? thumbnail
+        : IntermediateImage.parse(thumbnail)
+      : undefined
     if (getThumbnailFn) this._getThumbnailFn = getThumbnailFn
-    if (getTextsFn) this._getTextsFn = getTextsFn
-    this.textsLoaded = !getTextsFn
+    if (getContentFn) this._getContentFn = getContentFn
+    this.contentLoaded = !getContentFn
   }
   // 获取缩略图，按需渲染
-  async getThumbnail(scale = 1): Promise<string | undefined> {
+  async getThumbnail(scale = 1): Promise<IntermediateImage | undefined> {
     if (this._getThumbnailFn) return this._getThumbnailFn(scale)
     return this._thumbnail
   }
-  // 获取文本，按需获取
-  async getTexts(): Promise<IntermediateText[]> {
-    if (this._getTextsFn) {
-      const data = await this._getTextsFn()
+  // 获取内容，按需获取
+  async getContent(): Promise<IntermediateContent[]> {
+    if (this._getContentFn) {
+      const data = await this._getContentFn()
       const mapped = (
-        data as (IntermediateText | IntermediateTextSerialized)[]
-      ).map((t) =>
-        t instanceof IntermediateText ? t : IntermediateText.parse(t)
-      )
-      this.texts = mapped
-      this.textsLoaded = true
+        data as (IntermediateContent | IntermediateContentSerialized)[]
+      ).map(parseContentItem)
+      this.content = mapped
+      this.contentLoaded = true
       // 懒加载完成后去掉取数函数，避免重复请求
-      this._getTextsFn = undefined
+      this._getContentFn = undefined
     }
-    return this.texts
+    return this.content
   }
-  // 判断文本是否已加载（便于调用方做缓存判断）
-  get hasLoadedTexts(): boolean {
-    return this.textsLoaded
+  // 判断内容是否已加载（便于调用方做缓存判断）
+  get hasLoadedContent(): boolean {
+    return this.contentLoaded
   }
   // 提供一个方法以注入按需生成缩略图的函数
-  setGetThumbnail(fn: (scale: number) => Promise<string | undefined>) {
+  setGetThumbnail(fn: (scale: number) => Promise<IntermediateImage | undefined>) {
     this._getThumbnailFn = fn
   }
-  // 提供一个方法以注入按需获取文本的函数
-  setGetTexts(fn: () => TextsGetterReturnType) {
-    this._getTextsFn = fn
+  // 提供一个方法以注入按需获取内容的函数
+  setGetContent(fn: () => ContentGetterReturnType) {
+    this._getContentFn = fn
   }
 }
