@@ -86,6 +86,7 @@ test('IntermediateText serialize/parse keeps polygon and omits legacy geometry f
     'descent',
     'vertical',
     'dir',
+    'opacity',
     'skew',
     'isEOL'
   ])

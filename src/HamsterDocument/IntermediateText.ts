@@ -69,6 +69,8 @@ export interface IntermediateTextSerialized {
   vertical?: boolean
   // 文字方向
   dir: TextDir
+  // 透明度，0-1 之间，1 表示完全不透明
+  opacity?: number
   // 倾斜
   skew: number
   // 是否是行末
@@ -89,6 +91,7 @@ export class IntermediateText implements IntermediateTextSerialized {
   public descent: number
   public vertical?: boolean
   public dir: TextDir
+  public opacity?: number
   public skew: number
   public isEOL: boolean
   static serialize(text: IntermediateText): IntermediateTextSerialized {
@@ -106,6 +109,7 @@ export class IntermediateText implements IntermediateTextSerialized {
       descent: text.descent,
       vertical: text.vertical,
       dir: text.dir,
+      opacity: text.opacity,
       skew: text.skew,
       isEOL: text.isEOL
     }
@@ -127,6 +131,7 @@ export class IntermediateText implements IntermediateTextSerialized {
     descent,
     vertical,
     dir,
+    opacity,
     skew,
     isEOL
   }: IntermediateTextSerialized) {
@@ -143,6 +148,7 @@ export class IntermediateText implements IntermediateTextSerialized {
     this.descent = descent
     this.vertical = vertical
     this.dir = dir
+    this.opacity = opacity
     this.skew = skew
     this.isEOL = isEOL
   }
