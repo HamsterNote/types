@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 
 import {
   IntermediateDocument,
+  IntermediateImage,
   IntermediateOutline,
   IntermediateOutlineDestType,
   IntermediatePage,
@@ -292,4 +293,174 @@ test('IntermediateDocument keeps paragraphs through page flow only', async () =>
   const reserialized = await IntermediateDocument.serialize(reparsed)
 
   assert.deepStrictEqual(reserialized, serialized)
+})
+
+// ============================================================================
+// IntermediateImage 测试
+// ============================================================================
+
+function makeImageData(id, overrides = {}) {
+  return {
+    id,
+    src: 'https://example.com/image.png',
+    polygon: makePolygon(5, 10),
+    opacity: 1,
+    ...overrides
+  }
+}
+
+function makeImage(id, overrides = {}) {
+  return new IntermediateImage(makeImageData(id, overrides))
+}
+
+test('IntermediateImage serialize/parse roundtrip', () => {
+  const image = makeImage('img-1')
+
+  const serialized = IntermediateImage.serialize(image)
+
+  assert.deepStrictEqual(Object.keys(serialized), [
+    'id',
+    'src',
+    'polygon',
+    'opacity',
+    'clip'
+  ])
+  assert.deepStrictEqual(serialized.polygon, makePolygon(5, 10))
+  assert.equal(serialized.src, 'https://example.com/image.png')
+  assert.equal(serialized.opacity, 1)
+  assert.equal(serialized.clip, undefined)
+
+  const parsed = IntermediateImage.parse(serialized)
+
+  assert.deepStrictEqual(IntermediateImage.serialize(parsed), serialized)
+})
+
+test('IntermediateImage supports clip region', () => {
+  const clip = { x: 10, y: 20, width: 100, height: 200 }
+  const image = makeImage('img-clip', { clip })
+
+  const serialized = IntermediateImage.serialize(image)
+
+  assert.deepStrictEqual(serialized.clip, clip)
+
+  const parsed = IntermediateImage.parse(serialized)
+
+  assert.deepStrictEqual(parsed.clip, clip)
+})
+
+test('IntermediateImage rejects invalid polygon structures', () => {
+  assert.throws(
+    () =>
+      IntermediateImage.parse(
+        makeImageData('img-invalid', {
+          polygon: [
+            [0, 0],
+            [10, 0],
+            [10, 20]
+          ]
+        })
+      ),
+    /polygon 必须包含且仅包含 4 个点/
+  )
+})
+
+// ============================================================================
+// 混合内容测试（文本 + 图片）
+// ============================================================================
+
+test('IntermediatePage supports mixed content (text + image)', () => {
+  const text = makeText('text-1')
+  const image = makeImage('img-1')
+
+  const page = new IntermediatePage({
+    id: 'page-mixed',
+    content: [text, image],
+    width: 1000,
+    height: 2000,
+    number: 1
+  })
+
+  assert.equal(page.content.length, 2)
+  assert.ok(page.content[0] instanceof IntermediateText)
+  assert.ok(page.content[1] instanceof IntermediateImage)
+
+  const serialized = IntermediatePage.serialize(page)
+
+  assert.equal(serialized.content.length, 2)
+  assert.equal(serialized.content[0].content, 'text')
+  assert.equal(serialized.content[1].src, 'https://example.com/image.png')
+
+  const parsed = IntermediatePage.parse(serialized)
+
+  assert.equal(parsed.content.length, 2)
+  assert.ok(parsed.content[0] instanceof IntermediateText)
+  assert.ok(parsed.content[1] instanceof IntermediateImage)
+})
+
+// ============================================================================
+// 向后兼容性测试
+// ============================================================================
+
+test('IntermediatePage.parse accepts legacy texts field', () => {
+  const legacyData = {
+    id: 'page-legacy',
+    texts: [makeTextData('text-legacy')],
+    width: 100,
+    height: 200,
+    number: 1
+  }
+
+  const parsed = IntermediatePage.parse(legacyData)
+
+  assert.equal(parsed.content.length, 1)
+  assert.ok(parsed.content[0] instanceof IntermediateText)
+  assert.equal(parsed.content[0].id, 'text-legacy')
+})
+
+test('IntermediatePage.parse prefers content over texts', () => {
+  const data = {
+    id: 'page-both',
+    content: [makeImageData('img-from-content')],
+    texts: [makeTextData('text-from-texts')],
+    width: 100,
+    height: 200,
+    number: 1
+  }
+
+  const parsed = IntermediatePage.parse(data)
+
+  assert.equal(parsed.content.length, 1)
+  assert.ok(parsed.content[0] instanceof IntermediateImage)
+  assert.equal(parsed.content[0].id, 'img-from-content')
+})
+
+// ============================================================================
+// Opacity 测试
+// ============================================================================
+
+test('IntermediateText opacity is optional and preserved', () => {
+  const textWithoutOpacity = makeText('text-no-opacity')
+  const textWithOpacity = makeText('text-with-opacity', { opacity: 0.5 })
+
+  const serializedWithout = IntermediateText.serialize(textWithoutOpacity)
+  const serializedWith = IntermediateText.serialize(textWithOpacity)
+
+  assert.equal(serializedWithout.opacity, undefined)
+  assert.equal(serializedWith.opacity, 0.5)
+
+  const parsedWithout = IntermediateText.parse(serializedWithout)
+  const parsedWith = IntermediateText.parse(serializedWith)
+
+  assert.equal(parsedWithout.opacity, undefined)
+  assert.equal(parsedWith.opacity, 0.5)
+})
+
+test('IntermediateImage opacity defaults to 1', () => {
+  const image = new IntermediateImage({
+    id: 'img-default-opacity',
+    src: 'test.png',
+    polygon: makePolygon()
+  })
+
+  assert.equal(image.opacity, 1)
 })

@@ -1,5 +1,10 @@
 // IntermediateImage - 中间态图片表示
 
+import {
+  normalizePolygon,
+  type Polygon
+} from '../utils/polygon'
+
 // 图片裁切区域（矩形）
 export interface IntermediateImageClip {
   x: number
@@ -8,46 +13,8 @@ export interface IntermediateImageClip {
   height: number
 }
 
-// 图片多边形点类型，同 IntermediateTextPolygonPoint
-export type IntermediateImagePolygonPoint = [number, number]
-
-// 图片多边形类型，包含 4 个点的元组
-export type IntermediateImagePolygon = [
-  IntermediateImagePolygonPoint,
-  IntermediateImagePolygonPoint,
-  IntermediateImagePolygonPoint,
-  IntermediateImagePolygonPoint
-]
-
-function isFiniteCoordinate(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value)
-}
-
-function parsePolygonPoint(
-  point: unknown,
-  index: number
-): IntermediateImagePolygonPoint {
-  if (!Array.isArray(point) || point.length !== 2) {
-    throw new TypeError(`polygon[${index}] 必须是 [number, number]`)
-  }
-  const [x, y] = point
-  if (!isFiniteCoordinate(x) || !isFiniteCoordinate(y)) {
-    throw new TypeError(`polygon[${index}] 必须包含两个有限数值坐标`)
-  }
-  return [x, y]
-}
-
-function normalizePolygon(polygon: unknown): IntermediateImagePolygon {
-  if (!Array.isArray(polygon) || polygon.length !== 4) {
-    throw new TypeError('polygon 必须包含且仅包含 4 个点')
-  }
-  return [
-    parsePolygonPoint(polygon[0], 0),
-    parsePolygonPoint(polygon[1], 1),
-    parsePolygonPoint(polygon[2], 2),
-    parsePolygonPoint(polygon[3], 3)
-  ]
-}
+// 图片多边形类型，复用公共类型定义
+export type IntermediateImagePolygon = Polygon
 
 export interface IntermediateImageSerialized {
   id: string

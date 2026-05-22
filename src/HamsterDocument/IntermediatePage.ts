@@ -17,10 +17,13 @@ export type IntermediateContentSerialized =
   | IntermediateTextSerialized
   | IntermediateImageSerialized
 
+// 向后兼容的序列化接口，支持旧格式（texts）和新格式（content）
 export interface IntermediatePageSerialized {
   id: string
-  // 页面内容，包括文本和图片
-  content: IntermediateContentSerialized[]
+  // 页面内容，包括文本和图片（新格式）
+  content?: IntermediateContentSerialized[]
+  // 向后兼容：旧格式使用 texts 字段
+  texts?: IntermediateTextSerialized[]
   paragraphs?: IntermediateParagraphSerialized[]
   width: number
   height: number
@@ -35,15 +38,28 @@ type ContentGetterReturnType =
   | IntermediateContent[]
   | IntermediateContentSerialized[]
 
+/**
+ * 判断序列化数据是否为图片类型
+ * 使用更可靠的判断方式：检查 src 字段是否存在且为字符串
+ */
+function isImageSerialized(
+  item: IntermediateContentSerialized
+): item is IntermediateImageSerialized {
+  return (
+    'src' in item &&
+    typeof (item as IntermediateImageSerialized).src === 'string'
+  )
+}
+
 function parseContentItem(
   item: IntermediateContent | IntermediateContentSerialized
 ): IntermediateContent {
   if (item instanceof IntermediateText || item instanceof IntermediateImage) {
     return item
   }
-  // 根据 src 属性判断是图片还是文本
-  if ('src' in item) {
-    return IntermediateImage.parse(item as IntermediateImageSerialized)
+  // 使用更可靠的类型判断：检查 src 字段是否存在且为字符串
+  if (isImageSerialized(item)) {
+    return IntermediateImage.parse(item)
   }
   return IntermediateText.parse(item as IntermediateTextSerialized)
 }
@@ -87,6 +103,7 @@ export class IntermediatePage {
   }
   constructor({
     content,
+    texts,
     paragraphs = [],
     width,
     height,
@@ -95,16 +112,19 @@ export class IntermediatePage {
     thumbnail,
     getThumbnailFn,
     getContentFn
-  }: Omit<IntermediatePageSerialized, 'content' | 'paragraphs'> & {
-    content: IntermediateContent[] | IntermediateContentSerialized[]
+  }: Omit<IntermediatePageSerialized, 'content' | 'texts' | 'paragraphs'> & {
+    content?: IntermediateContent[] | IntermediateContentSerialized[]
+    texts?: IntermediateText[] | IntermediateTextSerialized[]
     paragraphs?: IntermediateParagraph[] | IntermediateParagraphSerialized[]
   } & {
     getThumbnailFn?: (scale: number) => Promise<IntermediateImage | undefined>
     getContentFn?: () => ContentGetterReturnType
   }) {
     this.id = id
+    // 向后兼容：优先使用 content，如果不存在则使用 texts
+    const rawContent = content ?? texts ?? []
     this.content = (
-      content as (IntermediateContent | IntermediateContentSerialized)[]
+      rawContent as (IntermediateContent | IntermediateContentSerialized)[]
     ).map(parseContentItem)
     this.paragraphs = (
       paragraphs as (IntermediateParagraph | IntermediateParagraphSerialized)[]
