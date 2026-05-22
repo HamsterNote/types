@@ -86,6 +86,7 @@ test('IntermediateText serialize/parse keeps polygon and omits legacy geometry f
     'descent',
     'vertical',
     'dir',
+    'opacity',
     'skew',
     'isEOL'
   ])
@@ -195,7 +196,7 @@ test('IntermediateParagraph serialize/parse preserves fields and order', () => {
 test('IntermediatePage serialize/parse keeps paragraphs', () => {
   const page = new IntermediatePage({
     id: 'page-1',
-    texts: [makeText('text-1')],
+    content: [makeText('text-1')],
     paragraphs: [makeParagraph(['text-1'])],
     width: 1000,
     height: 2000,
@@ -226,11 +227,10 @@ test('IntermediatePage serialize/parse keeps paragraphs', () => {
 test('historical page data defaults paragraphs to empty array', () => {
   const parsed = IntermediatePage.parse({
     id: 'page-legacy',
-    texts: [makeText('text-1')],
+    content: [makeText('text-1')],
     width: 100,
     height: 200,
-    number: 2,
-    thumbnail: undefined
+    number: 2
   })
 
   assert.deepStrictEqual(parsed.paragraphs, [])
@@ -240,7 +240,7 @@ test('historical page data defaults paragraphs to empty array', () => {
 test('paragraph textIds can point to missing page texts', () => {
   const page = new IntermediatePage({
     id: 'page-missing-texts',
-    texts: [],
+    content: [],
     paragraphs: [makeParagraph(['missing-1', 'missing-2'])],
     width: 1000,
     height: 2000,
@@ -262,12 +262,11 @@ test('IntermediateDocument keeps paragraphs through page flow only', async () =>
     pages: [
       {
         id: 'page-1',
-        texts: [makeText('text-1')],
+        content: [makeText('text-1')],
         paragraphs: [makeParagraph(['text-1'])],
         width: 1000,
         height: 2000,
-        number: 1,
-        thumbnail: undefined
+        number: 1
       }
     ],
     outline: [IntermediateOutline.serialize(makeOutline('outline-1'))]
@@ -286,7 +285,7 @@ test('IntermediateDocument keeps paragraphs through page flow only', async () =>
       textIds: ['text-1']
     }
   ])
-  assert.deepStrictEqual(serialized.pages[0].texts[0].polygon, makePolygon())
+  assert.deepStrictEqual(serialized.pages[0].content[0].polygon, makePolygon())
   assert.deepStrictEqual(serialized.outline?.[0].polygon, makePolygon())
 
   const reparsed = IntermediateDocument.parse(serialized)

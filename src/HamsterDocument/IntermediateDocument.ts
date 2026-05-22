@@ -174,7 +174,7 @@ export class IntermediateDocument {
     const pages = await doc.pagesMap.getPages()
     const serializedPages = await Promise.all(
       pages.map(async (page) => {
-        if (!page.hasLoadedTexts) await page.getTexts()
+        if (!page.hasLoadedContent) await page.getContent()
         return IntermediatePage.serialize(page)
       })
     )
