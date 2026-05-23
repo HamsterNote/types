@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-05-23
+
+### Added
+- 新增 `IntermediateImage` 中间态结构，用于表达图像内容及其几何信息
+- 新增 `IntermediateText` 的 `opacity` 字段，支持文本透明度设置
+- 新增 `src/utils/polygon.ts` 工具模块，提取共享的多边形几何计算函数
+
+### Changed
+- 重构 `IntermediatePage` 的内容结构，统一 `texts` 和 `images` 的管理方式
+- 优化 `IntermediateText` 的实现，简化几何信息处理逻辑
+- 更新测试用例，覆盖图像内容和透明度相关功能
+
 ## [0.7.0] - 2026-04-18
 
 ### Added
