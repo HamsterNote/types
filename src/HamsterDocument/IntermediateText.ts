@@ -1,47 +1,16 @@
+import {
+  normalizePolygon,
+  type Polygon
+} from '../utils/polygon'
+
 export enum TextDir {
   TTB = 'ttb',
   LTR = 'ltr',
   RTL = 'rtl'
 }
 
-export type IntermediateTextPolygonPoint = [number, number]
-
-export type IntermediateTextPolygon = [
-  IntermediateTextPolygonPoint,
-  IntermediateTextPolygonPoint,
-  IntermediateTextPolygonPoint,
-  IntermediateTextPolygonPoint
-]
-
-function isFiniteCoordinate(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value)
-}
-
-function parsePolygonPoint(
-  point: unknown,
-  index: number
-): IntermediateTextPolygonPoint {
-  if (!Array.isArray(point) || point.length !== 2) {
-    throw new TypeError(`polygon[${index}] 必须是 [number, number]`)
-  }
-  const [x, y] = point
-  if (!isFiniteCoordinate(x) || !isFiniteCoordinate(y)) {
-    throw new TypeError(`polygon[${index}] 必须包含两个有限数值坐标`)
-  }
-  return [x, y]
-}
-
-function normalizePolygon(polygon: unknown): IntermediateTextPolygon {
-  if (!Array.isArray(polygon) || polygon.length !== 4) {
-    throw new TypeError('polygon 必须包含且仅包含 4 个点')
-  }
-  return [
-    parsePolygonPoint(polygon[0], 0),
-    parsePolygonPoint(polygon[1], 1),
-    parsePolygonPoint(polygon[2], 2),
-    parsePolygonPoint(polygon[3], 3)
-  ]
-}
+// 文本多边形类型，复用公共类型定义
+export type IntermediateTextPolygon = Polygon
 
 export interface IntermediateTextSerialized {
   id: string
