@@ -51,6 +51,7 @@ function isImageSerialized(
   )
 }
 
+
 function parseContentItem(
   item: IntermediateContent | IntermediateContentSerialized
 ): IntermediateContent {

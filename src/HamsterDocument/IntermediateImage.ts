@@ -5,6 +5,7 @@ import {
   type Polygon
 } from '../utils/polygon'
 
+
 // 图片裁切区域（矩形）
 export interface IntermediateImageClip {
   x: number
