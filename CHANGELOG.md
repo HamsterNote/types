@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- 新增 `IntermediateAnnotation` 中间态结构，提供通用标注能力：支持高亮、下划线、波浪线、删除线、笔记、链接、书签七种类型；锚点支持文本区间锚点（pageId/textId/charIndex + textHash/上下文失锚回退 + 可选 cfiRange）与几何区域锚点（pageId + Polygon[]）两种方式；链接类型复用 `IntermediateOutlineDest` 作为跳转目标，可表达 `[1]` 引用、可点击目录等场景
+- `IntermediateDocument` 新增 `annotations` 字段与 `getAnnotations()` 方法，标注随文档序列化
+- 新增 `src/utils/textHash.ts` 工具模块，提供 FNV-1a `textHash` 与上下文提取函数 `getContextBefore` / `getContextAfter`，用于标注锚点的失锚回退
+- 新增标注序列化测试，覆盖 roundtrip、锚点判别、链接跳转目标、非法锚点校验与哈希工具
+
+### Changed
+- `test` 脚本改为运行 `tests/` 目录下全部测试
+
 ## [0.8.0] - 2026-05-23
 
 ### Added

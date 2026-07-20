@@ -1,3 +1,4 @@
+export * from './IntermediateAnnotation'
 export * from './IntermediateDocument'
 export * from './IntermediateImage'
 export * from './IntermediateOutline'

@@ -6,7 +6,7 @@
     "build:all": "rm -rf .build dist && tsc --project tsconfig.build.json --declaration false --declarationMap false --outDir .build && tsc --project tsconfig.build.json --emitDeclarationOnly --outDir dist && rolldown --config rolldown.config.ts && rm -rf .build",
     "prepublishOnly": "yarn build:all",
     "lint": "echo 'no-lint'",
-    "test": "yarn build:all && node --test tests/paragraph-structure.test.mjs"
+    "test": "yarn build:all && node --test \"tests/**/*.test.mjs\""
   },
   "dependencies": {},
   "devDependencies": {
