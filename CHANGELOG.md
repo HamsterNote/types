@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.10.0] - 2026-07-21
 
 ### Added
 - `IntermediateAnnotation` 新增页面锚点与 EPUB `href`/`fragment` 源位置，在文本 id 或 CFI 不可用时仍可保留页面书签和源文档定位
 - `IntermediateParagraph` 新增 `textAlign` 段落级语义对齐，支持 `start`、`end`、`left`、`right`、`center` 与 `justify`
+- `normalizeOutlineDest` 增加了对 annotation/link 目标地址的校验
 
 ### Changed
 - `IntermediateAnnotationSerialized` 改为判别联合，`NOTE` 必须包含 `note`，`LINK` 必须包含 `dest`，并在运行时边界执行同等校验
