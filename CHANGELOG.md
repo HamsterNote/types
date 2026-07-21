@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-21
+
 ### Added
 - 新增 `IntermediateAnnotation` 中间态结构，提供通用标注能力：支持高亮、下划线、波浪线、删除线、笔记、链接、书签七种类型；锚点支持文本区间锚点（pageId/textId/charIndex + textHash/上下文失锚回退 + 可选 cfiRange）与几何区域锚点（pageId + Polygon[]）两种方式；链接类型复用 `IntermediateOutlineDest` 作为跳转目标，可表达 `[1]` 引用、可点击目录等场景
 - `IntermediateDocument` 新增 `annotations` 字段与 `getAnnotations()` 方法，标注随文档序列化
@@ -15,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `test` 脚本改为运行 `tests/` 目录下全部测试
+- CI 发布策略从分支触发切换为标签触发，正式版与 beta 版分别使用 `v*.*.*` 和 `v*.*.*-*` 格式的标签
+
+### Fixed
+- 校验标注锚点合法性，禁止空区域锚点
+- 修复 CI 命令中 npm publish 触发方式
 
 ## [0.8.0] - 2026-05-23
 
