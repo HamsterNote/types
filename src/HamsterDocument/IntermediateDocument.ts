@@ -6,6 +6,10 @@ import {
   IntermediateOutline,
   type IntermediateOutlineSerialized
 } from './IntermediateOutline'
+import {
+  IntermediateAnnotation,
+  type IntermediateAnnotationSerialized
+} from './IntermediateAnnotation'
 import type { Number2 } from '../math/index'
 
 export interface IntermediateDocumentSerialized {
@@ -14,6 +18,8 @@ export interface IntermediateDocumentSerialized {
   title: string
   // 文档大纲（可选）
   outline?: IntermediateOutlineSerialized[]
+  // 文档标注（可选）：高亮、笔记、链接、书签等
+  annotations?: IntermediateAnnotationSerialized[]
 }
 
 type PageLoader = () => Promise<IntermediatePage>
@@ -155,6 +161,7 @@ export class IntermediateDocument {
   public readonly id: string
   public title: string
   public outline?: IntermediateOutline[]
+  public annotations?: IntermediateAnnotation[]
 
   get pages(): Promise<IntermediatePage[]> {
     return this.pagesMap.getPages()
@@ -182,7 +189,8 @@ export class IntermediateDocument {
       pages: serializedPages,
       id: doc.id,
       title: doc.title,
-      outline: doc.outline?.map(IntermediateOutline.serialize)
+      outline: doc.outline?.map(IntermediateOutline.serialize),
+      annotations: doc.annotations?.map(IntermediateAnnotation.serialize)
     }
   }
 
@@ -192,6 +200,9 @@ export class IntermediateDocument {
       pagesMap: IntermediatePageMap.fromSerialized(data.pages),
       outline: data.outline?.map((outline) =>
         IntermediateOutline.parse(outline)
+      ),
+      annotations: data.annotations?.map((annotation) =>
+        IntermediateAnnotation.parse(annotation)
       )
     })
   }
@@ -200,15 +211,18 @@ export class IntermediateDocument {
     pagesMap,
     id,
     title,
-    outline
-  }: Omit<IntermediateDocumentSerialized, 'pages'> & {
+    outline,
+    annotations
+  }: Omit<IntermediateDocumentSerialized, 'pages' | 'annotations'> & {
     pagesMap: IntermediatePageMap
     outline?: IntermediateOutline[]
+    annotations?: IntermediateAnnotation[]
   }) {
     this.pagesMap = pagesMap
     this.id = id
     this.title = title
     this.outline = outline
+    this.annotations = annotations
   }
 
   get pageCount() {
@@ -241,5 +255,10 @@ export class IntermediateDocument {
   // 获取文档大纲
   getOutline() {
     return this.outline
+  }
+
+  // 获取文档标注
+  getAnnotations() {
+    return this.annotations
   }
 }
