@@ -112,7 +112,7 @@ jobs:
       - name: Check publish package boundary
         if: steps.version.outputs.should_publish == 'true'
         run: |
-          yarn pack:check
+          npm pack --dry-run
 
       # 发布到 npm。latest/dev/beta 分别使用对应的 dist-tag
       # 需要在项目 Secrets 配置 NPM_TOKEN（具有发布权限的 npm 令牌）

@@ -130,6 +130,9 @@ function normalizeAnchor(
       end: normalizeTextPoint(anchor.end)
     }
   }
+  if (typeof anchor.pageId !== 'string' || anchor.pageId.length === 0) {
+    throw new TypeError('标注锚点 pageId 必须是非空字符串')
+  }
   if (!Array.isArray(anchor.polygons) || anchor.polygons.length === 0) {
     throw new TypeError('标注区域锚点 polygons 必须包含至少一个多边形')
   }
