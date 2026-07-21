@@ -1,5 +1,5 @@
-import test from 'node:test'
 import assert from 'node:assert/strict'
+import test from 'node:test'
 
 import {
   getContextAfter,
@@ -82,6 +82,7 @@ test('IntermediateAnnotation serialize/parse roundtrip with text anchor', () => 
     'color',
     'dest',
     'cfiRange',
+    'source',
     'author',
     'createdAt',
     'updatedAt'
@@ -185,7 +186,7 @@ test('IntermediateAnnotation rejects invalid anchors', () => {
         type: IntermediateAnnotationType.HIGHLIGHT,
         anchor: { kind: 'unknown' }
       }),
-    /标注锚点 kind 必须是 text 或 region/
+    /标注锚点 kind 必须是 text、region 或 page/
   )
 
   assert.throws(

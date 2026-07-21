@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `IntermediateAnnotation` 新增页面锚点与 EPUB `href`/`fragment` 源位置，在文本 id 或 CFI 不可用时仍可保留页面书签和源文档定位
+- `IntermediateParagraph` 新增 `textAlign` 段落级语义对齐，支持 `start`、`end`、`left`、`right`、`center` 与 `justify`
+
+### Changed
+- `IntermediateAnnotationSerialized` 改为判别联合，`NOTE` 必须包含 `note`，`LINK` 必须包含 `dest`，并在运行时边界执行同等校验
+- 标注构造与序列化会拒绝未知类型、非法源位置对象及非字符串 `fragment`，避免无效数据进入文档模型
+- 段落解析与序列化会拒绝契约之外的 `textAlign` 值，同时继续兼容缺少该字段的历史数据
+
+## [0.9.0] - 2026-07-21
+
+### Added
 - 新增 `IntermediateAnnotation` 中间态结构，提供通用标注能力：支持高亮、下划线、波浪线、删除线、笔记、链接、书签七种类型；锚点支持文本区间锚点（pageId/textId/charIndex + textHash/上下文失锚回退 + 可选 cfiRange）与几何区域锚点（pageId + Polygon[]）两种方式；链接类型复用 `IntermediateOutlineDest` 作为跳转目标，可表达 `[1]` 引用、可点击目录等场景
 - `IntermediateDocument` 新增 `annotations` 字段与 `getAnnotations()` 方法，标注随文档序列化
 - 新增 `src/utils/textHash.ts` 工具模块，提供 FNV-1a `textHash` 与上下文提取函数 `getContextBefore` / `getContextAfter`，用于标注锚点的失锚回退
@@ -15,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `test` 脚本改为运行 `tests/` 目录下全部测试
+- CI 发布策略从分支触发切换为标签触发，正式版与 beta 版分别使用 `v*.*.*` 和 `v*.*.*-*` 格式的标签
+
+### Fixed
+- 校验标注锚点合法性，禁止空区域锚点
+- 修复 CI 命令中 npm publish 触发方式
 
 ## [0.8.0] - 2026-05-23
 
