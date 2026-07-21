@@ -170,3 +170,54 @@ test('IntermediateAnnotation LINK requires a destination', () => {
     /LINK 类型标注必须包含 dest/
   )
 })
+
+test('IntermediateAnnotation LINK rejects malformed destinations', () => {
+  // Given：来自 JSON 或 JavaScript 调用方、虽然存在但不符合目标联合类型的 dest。
+  const malformedDestinations = [
+    {},
+    { targetType: 'bogus' },
+    { targetType: 'page' },
+    { targetType: 'text', textId: '' },
+    { targetType: 'url', newWindow: false },
+    { targetType: 'url', url: 'https://example.com', newWindow: 'yes' },
+    {
+      targetType: 'url',
+      url: 'https://example.com',
+      unsafeUrl: 42,
+      newWindow: false
+    },
+    { targetType: 'position', items: {} },
+    { targetType: 'position', items: [{ targetType: 'bogus' }] }
+  ]
+
+  // When / Then：解析边界必须逐一拒绝，不能让非法目标进入文档模型。
+  for (const dest of malformedDestinations) {
+    assert.throws(
+      () =>
+        IntermediateAnnotation.parse({
+          id: 'annotation-link-with-malformed-dest',
+          type: IntermediateAnnotationType.LINK,
+          anchor: { kind: 'page', pageId: 'page-1' },
+          dest
+        }),
+      TypeError
+    )
+  }
+})
+
+test('IntermediateAnnotation LINK revalidates mutated destinations when serializing', () => {
+  // Given：一个合法实例的公开 dest 被运行时调用方篡改为未知目标类型。
+  const annotation = new IntermediateAnnotation({
+    id: 'annotation-link-with-mutated-dest',
+    type: IntermediateAnnotationType.LINK,
+    anchor: { kind: 'page', pageId: 'page-1' },
+    dest: { targetType: 'page', pageId: 'page-2' }
+  })
+  annotation.dest = { targetType: 'bogus' }
+
+  // When / Then：序列化边界再次校验，不能原样输出非法目标。
+  assert.throws(
+    () => IntermediateAnnotation.serialize(annotation),
+    /跳转目标 targetType 必须是 text、page、position 或 url/
+  )
+})

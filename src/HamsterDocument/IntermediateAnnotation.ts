@@ -15,7 +15,10 @@ import {
   normalizeAnnotationAnchor,
   normalizeAnnotationSourceLocation
 } from './IntermediateAnnotationAnchor'
-import type { IntermediateOutlineDest } from './IntermediateOutline'
+import {
+  type IntermediateOutlineDest,
+  normalizeOutlineDest
+} from './IntermediateOutline'
 
 export {
   type IntermediateAnnotationAnchor,
@@ -127,6 +130,10 @@ export class IntermediateAnnotation {
     const type = normalizeAnnotationType(annotation.type)
     const anchor = normalizeAnnotationAnchor(annotation.anchor)
     const source = normalizeAnnotationSourceLocation(annotation.source)
+    const dest =
+      annotation.dest === undefined
+        ? undefined
+        : normalizeOutlineDest(annotation.dest)
     switch (type) {
       case IntermediateAnnotationType.NOTE:
         if (typeof annotation.note !== 'string') {
@@ -139,7 +146,7 @@ export class IntermediateAnnotation {
           text: annotation.text,
           note: annotation.note,
           color: annotation.color,
-          dest: annotation.dest,
+          dest,
           cfiRange: annotation.cfiRange,
           source,
           author: annotation.author,
@@ -147,7 +154,7 @@ export class IntermediateAnnotation {
           updatedAt: annotation.updatedAt
         }
       case IntermediateAnnotationType.LINK:
-        if (!annotation.dest) {
+        if (!dest) {
           throw new TypeError('LINK 类型标注必须包含 dest')
         }
         return {
@@ -157,7 +164,7 @@ export class IntermediateAnnotation {
           text: annotation.text,
           note: annotation.note,
           color: annotation.color,
-          dest: annotation.dest,
+          dest,
           cfiRange: annotation.cfiRange,
           source,
           author: annotation.author,
@@ -176,7 +183,7 @@ export class IntermediateAnnotation {
           text: annotation.text,
           note: annotation.note,
           color: annotation.color,
-          dest: annotation.dest,
+          dest,
           cfiRange: annotation.cfiRange,
           source,
           author: annotation.author,
@@ -220,7 +227,7 @@ export class IntermediateAnnotation {
     this.text = text
     this.note = note
     this.color = color
-    this.dest = dest
+    this.dest = dest === undefined ? undefined : normalizeOutlineDest(dest)
     this.cfiRange = cfiRange
     this.source = normalizeAnnotationSourceLocation(source)
     this.author = author
