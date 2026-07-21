@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `IntermediateAnnotation` 新增页面锚点与 EPUB `href`/`fragment` 源位置，在文本 id 或 CFI 不可用时仍可保留页面书签和源文档定位
+- `IntermediateParagraph` 新增 `textAlign` 段落级语义对齐，支持 `start`、`end`、`left`、`right`、`center` 与 `justify`
+
+### Changed
+- `IntermediateAnnotationSerialized` 改为判别联合，`NOTE` 必须包含 `note`，`LINK` 必须包含 `dest`，并在运行时边界执行同等校验
+- 标注构造与序列化会拒绝未知类型、非法源位置对象及非字符串 `fragment`，避免无效数据进入文档模型
+- 段落解析与序列化会拒绝契约之外的 `textAlign` 值，同时继续兼容缺少该字段的历史数据
+
 ## [0.9.0] - 2026-07-21
 
 ### Added

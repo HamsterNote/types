@@ -1,5 +1,5 @@
-import test from 'node:test'
 import assert from 'node:assert/strict'
+import test from 'node:test'
 
 import {
   IntermediateDocument,
@@ -8,7 +8,8 @@ import {
   IntermediateOutlineDestType,
   IntermediatePage,
   IntermediateParagraph,
-  IntermediateText
+  IntermediateText,
+  IntermediateTextAlign
 } from '../dist/index.js'
 
 function makePolygon(offsetX = 1, offsetY = 2) {
@@ -57,14 +58,15 @@ function makeOutline(id, overrides = {}) {
   })
 }
 
-function makeParagraph(textIds) {
+function makeParagraph(textIds, overrides = {}) {
   return new IntermediateParagraph({
     id: 'paragraph-1',
     x: 11,
     y: 22,
     width: 333,
     height: 44,
-    textIds
+    textIds,
+    ...overrides
   })
 }
 
@@ -177,7 +179,8 @@ test('IntermediateParagraph serialize/parse preserves fields and order', () => {
     'y',
     'width',
     'height',
-    'textIds'
+    'textIds',
+    'textAlign'
   ])
   assert.deepStrictEqual(serialized, {
     id: 'paragraph-1',
@@ -185,13 +188,69 @@ test('IntermediateParagraph serialize/parse preserves fields and order', () => {
     y: 22,
     width: 333,
     height: 44,
-    textIds: ['text-2', 'text-1']
+    textIds: ['text-2', 'text-1'],
+    textAlign: undefined
   })
 
   const parsed = IntermediateParagraph.parse(serialized)
 
   assert.deepStrictEqual(parsed, paragraph)
   assert.deepStrictEqual(parsed.textIds, ['text-2', 'text-1'])
+})
+
+test('IntermediateParagraph preserves semantic text alignment', () => {
+  // Given：一个来自 EPUB `text-align: center` 的段落。
+  const paragraph = makeParagraph(
+    ['text-title'],
+    { textAlign: IntermediateTextAlign.CENTER }
+  )
+
+  // When：段落经过公共序列化和反序列化边界。
+  const serialized = IntermediateParagraph.serialize(paragraph)
+  const reparsed = IntermediateParagraph.parse(serialized)
+
+  // Then：语义对齐信息独立于几何坐标完整保留。
+  assert.equal(serialized.textAlign, 'center')
+  assert.equal(reparsed.textAlign, IntermediateTextAlign.CENTER)
+  assert.deepStrictEqual(IntermediateParagraph.serialize(reparsed), serialized)
+})
+
+test('historical paragraph data keeps textAlign undefined', () => {
+  // Given：0.9.0 及更早版本生成的不含 textAlign 的段落数据。
+  const legacyParagraph = {
+    id: 'paragraph-legacy',
+    x: 11,
+    y: 22,
+    width: 333,
+    height: 44,
+    textIds: ['text-1']
+  }
+
+  // When：旧数据被新版本解析。
+  const parsed = IntermediateParagraph.parse(legacyParagraph)
+
+  // Then：无需迁移即可使用，序列化结果仅增加值为 undefined 的可选字段。
+  assert.equal(parsed.textAlign, undefined)
+  assert.equal(IntermediateParagraph.serialize(parsed).textAlign, undefined)
+})
+
+test('IntermediateParagraph rejects unsupported text alignment', () => {
+  // Given：一个来自非 TypeScript 消费者的非法对齐值。
+  const paragraph = {
+    id: 'paragraph-invalid-align',
+    x: 11,
+    y: 22,
+    width: 333,
+    height: 44,
+    textIds: ['text-1'],
+    textAlign: 'middle'
+  }
+
+  // When / Then：解析边界必须拒绝契约之外的值，避免非法状态进入文档模型。
+  assert.throws(
+    () => IntermediateParagraph.parse(paragraph),
+    /textAlign 必须是 start、end、left、right、center、justify 或 undefined/
+  )
 })
 
 test('IntermediatePage serialize/parse keeps paragraphs', () => {
@@ -213,7 +272,8 @@ test('IntermediatePage serialize/parse keeps paragraphs', () => {
       y: 22,
       width: 333,
       height: 44,
-      textIds: ['text-1']
+      textIds: ['text-1'],
+      textAlign: undefined
     }
   ])
 
@@ -283,7 +343,8 @@ test('IntermediateDocument keeps paragraphs through page flow only', async () =>
       y: 22,
       width: 333,
       height: 44,
-      textIds: ['text-1']
+      textIds: ['text-1'],
+      textAlign: undefined
     }
   ])
   assert.deepStrictEqual(serialized.pages[0].content[0].polygon, makePolygon())
