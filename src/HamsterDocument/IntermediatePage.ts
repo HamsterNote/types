@@ -30,6 +30,8 @@ export interface IntermediatePageSerialized {
   number: number
   // 缩略图，使用 IntermediateImage 表示
   thumbnail?: IntermediateImageSerialized
+  // 是否使用文档流排版（而非绝对定位），缺省时使用定位排版
+  useFlowLayout?: boolean
 }
 
 // 定义内容获取函数的返回类型别名
@@ -81,6 +83,7 @@ export class IntermediatePage {
   public width: number
   public height: number
   public number: number
+  public useFlowLayout?: boolean
   private _thumbnail?: IntermediateImage
   private _getThumbnailFn?: (scale: number) => Promise<IntermediateImage | undefined>
   private _getContentFn?: () => ContentGetterReturnType
@@ -94,6 +97,7 @@ export class IntermediatePage {
       width: page.width,
       height: page.height,
       number: page.number,
+      useFlowLayout: page.useFlowLayout,
       thumbnail: page._thumbnail
         ? IntermediateImage.serialize(page._thumbnail)
         : undefined
@@ -111,6 +115,7 @@ export class IntermediatePage {
     number,
     id,
     thumbnail,
+    useFlowLayout,
     getThumbnailFn,
     getContentFn
   }: Omit<IntermediatePageSerialized, 'content' | 'texts' | 'paragraphs'> & {
@@ -137,6 +142,7 @@ export class IntermediatePage {
     this.width = width
     this.height = height
     this.number = number
+    this.useFlowLayout = useFlowLayout
     this._thumbnail = thumbnail
       ? thumbnail instanceof IntermediateImage
         ? thumbnail

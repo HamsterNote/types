@@ -44,6 +44,8 @@ export interface IntermediateTextSerialized {
   skew: number
   // 是否是行末
   isEOL: boolean
+  // 是否需要缩放文字以撑满 polygon（如对齐排版、拉伸填满文本区域）
+  fitToPolygon?: boolean
 }
 
 export class IntermediateText implements IntermediateTextSerialized {
@@ -63,6 +65,7 @@ export class IntermediateText implements IntermediateTextSerialized {
   public opacity?: number
   public skew: number
   public isEOL: boolean
+  public fitToPolygon?: boolean
   static serialize(text: IntermediateText): IntermediateTextSerialized {
     return {
       id: text.id,
@@ -80,7 +83,8 @@ export class IntermediateText implements IntermediateTextSerialized {
       dir: text.dir,
       opacity: text.opacity,
       skew: text.skew,
-      isEOL: text.isEOL
+      isEOL: text.isEOL,
+      fitToPolygon: text.fitToPolygon
     }
   }
   static parse(data: IntermediateTextSerialized): IntermediateText {
@@ -102,7 +106,8 @@ export class IntermediateText implements IntermediateTextSerialized {
     dir,
     opacity,
     skew,
-    isEOL
+    isEOL,
+    fitToPolygon
   }: IntermediateTextSerialized) {
     this.id = id
     this.content = content
@@ -120,6 +125,7 @@ export class IntermediateText implements IntermediateTextSerialized {
     this.opacity = opacity
     this.skew = skew
     this.isEOL = isEOL
+    this.fitToPolygon = fitToPolygon
   }
 }
 
