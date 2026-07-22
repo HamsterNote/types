@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0-beta.1] - 2026-07-22
+
+### Added
+- `IntermediateText` 新增 `fitToPolygon` 字段，标记文字是否需要缩放以撑满多边形区域（用于对齐排版、拉伸填满文本区域等场景）
+- `IntermediatePage` 新增 `useFlowLayout` 字段，标记页面是否使用文档流排版（而非绝对定位）
+
 ## [0.10.0] - 2026-07-21
 
 ### Added
