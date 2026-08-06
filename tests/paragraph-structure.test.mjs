@@ -91,7 +91,8 @@ test('IntermediateText serialize/parse keeps polygon and omits legacy geometry f
     'dir',
     'opacity',
     'skew',
-    'isEOL'
+    'isEOL',
+    'fitToPolygon'
   ])
   assert.deepStrictEqual(serialized.polygon, makePolygon())
   assert.equal('x' in serialized, false)
